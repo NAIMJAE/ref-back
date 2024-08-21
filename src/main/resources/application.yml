@@ -1,0 +1,41 @@
+spring:
+    application:
+        name: reference
+
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        password: Abcd1234!
+        url: jdbc:mysql://3.39.72.175/reference
+        username: root
+    devtools:
+        livereload:
+            enabled: true
+        restart:
+            enabled: false
+
+    jpa:
+        database: mysql
+        hibernate:
+            ddl-auto: none
+            naming:
+                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        properties:
+            hibernate:
+                format_sql: true
+                show_sql: true
+
+server:
+    port: 8080
+    servlet:
+        context-path: /ref
+
+jwt:
+    issuer: hyeji111544@gmail.com
+    secret: 4XudNUpSmog3lwI9thJFejF7YfBBQnCI
+
+file:
+    upload:
+        path: uploads/
+
+front:
+    url: 'http://localhost:3000'
