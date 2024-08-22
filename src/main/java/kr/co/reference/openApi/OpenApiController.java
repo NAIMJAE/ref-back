@@ -34,7 +34,6 @@ public class OpenApiController {
 
     // 짱구 등장인물 정보 OpenApi
     // 등장인물 데이터 조회
-    // serviceKey / type / numOfRows / pageNo
     @GetMapping("/shinchan/v1/getCharacterListInfo")
     public ResponseEntity<?> getCharacterListInfo(@RequestParam String serviceKey,
                                               @RequestParam String type,
@@ -49,7 +48,6 @@ public class OpenApiController {
     }
     
     // 이름으로 데이터 조회
-    // serviceKey / type / name
     @GetMapping("/shinchan/v1/getCharacterInfo")
     public ResponseEntity<?> getCharacterInfo(@RequestParam String serviceKey,
         @RequestParam String type,
