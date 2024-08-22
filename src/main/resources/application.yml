@@ -5,8 +5,8 @@ spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
         password: Abcd1234!
-        url: jdbc:mysql://3.39.72.175/reference
-        username: root
+        url: jdbc:mysql://3.38.178.208/reference
+        username: ref
     devtools:
         livereload:
             enabled: true
@@ -30,7 +30,7 @@ server:
         context-path: /ref
 
 jwt:
-    issuer: hyeji111544@gmail.com
+    issuer: skdlawo5985@gmail.com
     secret: 4XudNUpSmog3lwI9thJFejF7YfBBQnCI
 
 file:
