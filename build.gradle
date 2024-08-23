@@ -75,3 +75,7 @@ tasks.withType(JavaCompile) {
 clean {
     delete file(querydslDir)
 }
+// plain.jar 파일 생성을 금지시키는 설정 -> CI/CD시 .jar 파일이 두 개 생성되기 때문에 실행 오류 발생
+tasks.named('jar') {
+    enabled = false
+}
