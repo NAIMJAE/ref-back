@@ -5,7 +5,7 @@ spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
         password: Abcd1234!
-        url: jdbc:mysql://3.38.178.208/reference
+        url: jdbc:mysql://3.35.87.115/reference
         username: ref
     devtools:
         livereload:
