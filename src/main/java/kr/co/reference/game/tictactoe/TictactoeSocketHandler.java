@@ -39,6 +39,21 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
         // 현재 방에 있는 사용자의 수를 체크
         int playerCount = sessions.size();
 
+        // 방이 가득 찼는지 확인
+        if (playerCount >= 2) {
+            // 정원 초과 메시지를 전송
+            Map<String, Object> response = new HashMap<>();
+            response.put("type", "full");
+            response.put("message", "Room is full");
+            String jsonResponse = objectMapper.writeValueAsString(response);
+            session.sendMessage(new TextMessage(jsonResponse));
+
+            // 로그 출력 후 연결 종료
+            log.info("방이 가득 찼습니다. : " + session.getId());
+            session.close(CloseStatus.NOT_ACCEPTABLE);
+            return;
+        }
+
         // roomSessions에 방 정보 세션 저장
         roomSessions.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>()).put(session.getId(), session);
 
