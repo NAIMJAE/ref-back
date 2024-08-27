@@ -58,6 +58,10 @@ dependencies {
 
     // socket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // jbcrypt
+    implementation 'org.mindrot:jbcrypt:0.4'
+
 }
 
 tasks.named('test') {
