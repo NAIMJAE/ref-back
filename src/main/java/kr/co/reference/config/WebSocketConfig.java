@@ -1,5 +1,6 @@
-package kr.co.reference.game.tictactoe;
+package kr.co.reference.config;
 
+import kr.co.reference.game.tictactoe.TictactoeSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -15,7 +16,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(tictactoeSocketHandler, "/tictactoe").setAllowedOrigins("*");
+        registry.addHandler(tictactoeSocketHandler, "/tictactoe/{roomId}").setAllowedOrigins("*");
 
     }
 }
