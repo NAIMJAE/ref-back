@@ -26,4 +26,5 @@ public class Reference {
     private LocalDate refCreate;
     @CreationTimestamp
     private LocalDate refUpdate;
+    private String refThumb;
 }
