@@ -27,6 +27,8 @@ public class QReference extends EntityPathBase<Reference> {
 
     public final NumberPath<Integer> refNo = createNumber("refNo", Integer.class);
 
+    public final StringPath refThumb = createString("refThumb");
+
     public final StringPath refTitle = createString("refTitle");
 
     public final DatePath<java.time.LocalDate> refUpdate = createDate("refUpdate", java.time.LocalDate.class);
