@@ -17,8 +17,8 @@ public class ChatBotController {
     private final OpenAIService openAIService;
 
     // Assistant와 Thread를 동시에 생성
-    @PostMapping("/assistant")
-    public ResponseEntity<?> createAssistantAndThread(@RequestBody String userId) {
+    @GetMapping("/assistant/{userId}")
+    public ResponseEntity<?> createAssistantAndThread(@PathVariable String userId) {
         log.info("챗봇 생성 : " + userId);
         try {
             ChatBotThreadDTO threadDTO = openAIService.createOrGetThread(userId); // Thread 생성 또는 조회
@@ -34,28 +34,35 @@ public class ChatBotController {
     // 챗봇 메시지 전송
     @PostMapping("/chatbot")
     public ResponseEntity<?> getChatResponse(@RequestBody ChatDTO chatRequest) {
+
         log.info("챗봇 대화 : " + chatRequest);
         try {
-            log.info("Here 111 ");
-            // OpenAI로 메시지 추가 요청
-            openAIService.addMessageToThread(chatRequest);
-            log.info("Here 444 ");
-            // Run 요청으로 응답 생성
-            openAIService.runAssistant(chatRequest.getThreadId(), chatRequest.getAssistantId());
-            log.info("Here 666 ");
-
-            Thread.sleep(2500); // 응답생성 기다려주기
-
             // 스레드의 모든 메시지와 응답 조회
             List<ChatDTO> allMessages = openAIService.getAllMessages(chatRequest.getThreadId());
-            log.info("Here 888 ");
+            // OpenAI로 메시지 추가 요청
+            openAIService.addMessageToThread(chatRequest);
+            // Run 요청으로 응답 생성
+            openAIService.runAssistant(chatRequest.getThreadId(), chatRequest.getAssistantId());
+
+            Thread.sleep(1000); // 응답생성 기다려주기
+
+            List<ChatDTO> updateMessages = openAIService.getAllMessages(chatRequest.getThreadId());
+
+            log.info("updateMessages : " + updateMessages);
+
+            while (updateMessages != null && !updateMessages.isEmpty() && allMessages.size() < updateMessages.size()) {
+                Thread.sleep(1000);
+                updateMessages = openAIService.getAllMessages(chatRequest.getThreadId());
+            }
+
             // 프론트엔드로 전체 메시지와 응답 반환
-            return ResponseEntity.ok().body(allMessages);
+            return ResponseEntity.ok().body(updateMessages);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error communicating with OpenAI API");
         }
     }
 
+    // 메세지 전체 조회
     @GetMapping("/chatbot/{threadId}")
     public ResponseEntity<?> getChatList(@PathVariable String threadId) throws Exception {
         log.info("채팅 내역 조회 : " + threadId);

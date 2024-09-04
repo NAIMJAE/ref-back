@@ -47,7 +47,7 @@ public class OpenAIService {
 
         // 3. 기존 스레드가 없으면 새로운 Assistant 및 Thread 생성
         // String assistantId = createAssistant();
-        String assistantId = "asst_1OVaAWKQbAIy8yJVinCr0RM2";
+        String assistantId = "asst_7RLhworDphwpQVUWcfhd4RfR";
         String threadId = createNewThread(assistantId);
 
         // 4. 새로운 ChatBotThread 객체 생성 후 DB에 저장
