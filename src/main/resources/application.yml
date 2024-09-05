@@ -40,3 +40,6 @@ file:
 front:
     url: 'http://localhost:3000'
 
+openai:
+    api:
+        key: fakekey
