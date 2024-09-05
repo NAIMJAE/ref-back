@@ -37,10 +37,12 @@ public class ChatBotController {
 
         log.info("챗봇 대화 : " + chatRequest);
         try {
-            // 스레드의 모든 메시지와 응답 조회
-            List<ChatDTO> allMessages = openAIService.getAllMessages(chatRequest.getThreadId());
             // OpenAI로 메시지 추가 요청
             openAIService.addMessageToThread(chatRequest);
+
+            // 스레드의 모든 메시지와 응답 조회
+            List<ChatDTO> allMessages = openAIService.getAllMessages(chatRequest.getThreadId());
+
             // Run 요청으로 응답 생성
             openAIService.runAssistant(chatRequest.getThreadId(), chatRequest.getAssistantId());
 
