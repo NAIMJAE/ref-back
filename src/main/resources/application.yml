@@ -40,6 +40,3 @@ file:
 front:
     url: 'http://localhost:3000'
 
-openai:
-    api:
-        key: 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
