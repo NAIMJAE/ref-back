@@ -21,6 +21,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -65,6 +66,9 @@ dependencies {
 
     // jbcrypt
     implementation 'org.mindrot:jbcrypt:0.4'
+
+    // 형태소 분석기 KOMORAN
+    implementation 'com.github.shin285:KOMORAN:3.3.9'
 
 }
 
