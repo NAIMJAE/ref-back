@@ -47,7 +47,7 @@ public class OpenAIService {
 
         // 3. 기존 스레드가 없으면 새로운 Assistant 및 Thread 생성
         // String assistantId = createAssistant();
-        String assistantId = "asst_1OVaAWKQbAIy8yJVinCr0RM2";
+        String assistantId = "asst_7RLhworDphwpQVUWcfhd4RfR";
         String threadId = createNewThread(assistantId);
 
         // 4. 새로운 ChatBotThread 객체 생성 후 DB에 저장
@@ -147,12 +147,18 @@ public class OpenAIService {
         // OpenAI API로부터 모든 메시지를 조회하는 예제
         String getMessagesUrl = OPENAI_API_URL + "/threads/" + threadId + "/messages";
         log.info("Here 777 ");
+        log.info("Fetching messages from : " + getMessagesUrl);
         HttpGet httpGet = new HttpGet(getMessagesUrl);
         httpGet.setHeader("Content-Type", "application/json");
         httpGet.setHeader("Authorization", "Bearer " + openaiApiKey);
         httpGet.setHeader("OpenAI-Beta", "assistants=v2");
 
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("Failed to fetch messages. HTTP error code: " + statusCode);
+                return null;
+            }
             String result = EntityUtils.toString(response.getEntity());
             JSONObject jsonResponse = new JSONObject(result);
 
