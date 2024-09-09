@@ -42,4 +42,4 @@ front:
 
 openai:
     api:
-        key: fakekey
+        key: fakeKey
