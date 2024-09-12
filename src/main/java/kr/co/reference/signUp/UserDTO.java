@@ -17,4 +17,7 @@ public class UserDTO {
     private String role;
     private String serviceKey;
     private LocalDate rdate;
+
+    // 추가 필드
+    private boolean autoLogin;
 }
