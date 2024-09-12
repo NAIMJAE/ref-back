@@ -16,7 +16,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(tictactoeSocketHandler, "/tictactoe/{roomId}").setAllowedOrigins("*");
+        registry.addHandler(tictactoeSocketHandler, "/tictactoe").setAllowedOrigins("*");
 
     }
 }

@@ -50,10 +50,12 @@ public class ChatBotController {
 
             List<ChatDTO> updateMessages = openAIService.getAllMessages(chatRequest.getThreadId());
 
+            log.info("allMessages : " + allMessages);
+            log.info("allMessages : " + allMessages.size());
             log.info("updateMessages : " + updateMessages);
 
-            while (updateMessages != null && !updateMessages.isEmpty() && allMessages.size() < updateMessages.size()) {
-                Thread.sleep(1000);
+            while (updateMessages == null || updateMessages.isEmpty() || allMessages.size() >= updateMessages.size()) {
+                Thread.sleep(1500);
                 updateMessages = openAIService.getAllMessages(chatRequest.getThreadId());
             }
 
