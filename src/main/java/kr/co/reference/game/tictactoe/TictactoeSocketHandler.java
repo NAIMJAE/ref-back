@@ -67,18 +67,47 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
         String type = (String) messageMap.get("type");
 
         log.info("소켓 메세지 타입 : "+ type);
+
         if ("leaveRoom".equals(type)) {
             // 클라이언트의 게임 종료
             String userId = (String) messageMap.get("userId");
             String roomId = String.valueOf(messageMap.get("roomId"));
 
-            log.info("leaveRoom userId : " + userId + "roomId : " + roomId);
+            log.info("leaveRoom userId : " + userId + " | roomId : " + roomId);
 
             // 기존 방에서 사용자 제거
             if (roomId != null && !roomId.isEmpty()) {
                 List<String> roomMembers = memberSessions.get(roomId);
                 if (roomMembers != null) {
                     roomMembers.remove(userId);
+                }
+            }
+
+            // 같은 방의 플레이어의 심볼 변경 전송
+            // 방에 남은 사용자가 있으면, 해당 사용자에게 새로운 역할(0)을 할당
+            if (!memberSessions.get(roomId).isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("type", "playerLeft");
+                response.put("player", 0);
+                String jsonResponse = objectMapper.writeValueAsString(response);
+
+                try {
+                   log.info("심볼 변경 전송");
+                   log.info("roomId : " + roomId);
+                   log.info("roomSessions : " + roomSessions);
+                   log.info("roomSessions.get(roomId) : " + roomSessions.get(roomId));
+                   log.info("roomSessions.values() : " + roomSessions.values());
+
+
+
+                    for (WebSocketSession webSocketSession : roomSessions.get(roomId).values()) {
+                        log.info("심볼 변경 전송 22 ");
+                        if (webSocketSession.isOpen()) {
+                            webSocketSession.sendMessage(new TextMessage(jsonResponse));
+                        }
+                    }
+                }catch (Exception e) {
+                    log.error(e.getMessage());
                 }
             }
 
@@ -138,7 +167,14 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
             memberSessions.computeIfAbsent(newRoomId, k -> new ArrayList<>()).add(userId);
 
             // roomSessions에 WebSocketSession 추가
+            log.info("newRoomId : " + newRoomId);
+            log.info("session.getId() : " + session.getId());
+
             roomSessions.computeIfAbsent(newRoomId, k -> new ConcurrentHashMap<>()).put(session.getId(), session);
+
+            log.info("roomSessions.get(1) : " + roomSessions.get("1"));
+            log.info("roomSessions.get(2) : " + roomSessions.get("2"));
+            log.info("roomSessions.get(3) : " + roomSessions.get("3"));
 
             // 클라이언트에게 역할을 전달 (0: 먼저 움직임, 1: 나중에 움직임)
             Map<String, Object> response = new HashMap<>();
@@ -155,8 +191,14 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
         }else if ("makeMove".equals(type) || "gameOver".equals(type)) {
             // 메시지의 타입에 따라 처리
             String roomId = (String) messageMap.get("roomId");
+
+            log.info("makeMove roomId : " + roomId);
+            log.info("makeMove roomSessions : " + roomSessions);
+            log.info("makeMove roomSessions.get(roomId) : " + roomSessions.get(roomId));
+
             // 같은 방에 있는 모든 클라이언트에게 메시지 방송
             for (WebSocketSession webSocketSession : roomSessions.get(roomId).values()) {
+
                 if (webSocketSession.isOpen()) {
                     webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageMap)));
                 }
@@ -174,17 +216,6 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
             // 세션 제거
             if (sessions != null) {
                 sessions.remove(session.getId());
-                log.info("연결이 종료된 소켓 세션 아이디 : " + session.getId() + " 방 번호 : " + roomId + " 남은 인원: " + sessions.size());
-
-                // 방에 남은 사용자가 있으면, 해당 사용자에게 새로운 역할(0)을 할당
-                if (!sessions.isEmpty()) {
-                    WebSocketSession remainingSession = sessions.values().iterator().next();
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("type", "playerLeft");
-                    response.put("player", 0);
-                    String jsonResponse = objectMapper.writeValueAsString(response);
-                    remainingSession.sendMessage(new TextMessage(jsonResponse));
-                }
             }
         }
     }
@@ -192,12 +223,6 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
     // roomId를 session에서 가져오는 메서드
     private String getRoomId(WebSocketSession session) {
         return (String) session.getAttributes().get("roomId");
-    }
-
-    // URI에서 userId 추출
-    private String getUserId(WebSocketSession session) {
-        String path = session.getUri().getPath();
-        return path.split("/")[4];
     }
 
     // 모든 클라이언트에게 방 상태를 전송하는 메서드
@@ -218,6 +243,7 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
             String jsonResponse = objectMapper.writeValueAsString(response);
 
             // 모든 클라이언트에게 방 상태 전송
+            log.info("roomSessions.values() : " + roomSessions.values());
             for (Map<String, WebSocketSession> sessions : roomSessions.values()) {
                 for (WebSocketSession webSocketSession : sessions.values()) {
                     if (webSocketSession.isOpen()) {

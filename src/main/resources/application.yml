@@ -28,6 +28,9 @@ server:
     port: 8080
     servlet:
         context-path: /ref
+        session:
+            cookie:
+                name: REF_SESSION
 
 jwt:
     issuer: skdlawo5985@gmail.com
@@ -42,4 +45,5 @@ front:
 
 openai:
     api:
-        key: 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
+        #key: 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
+        key: fakeKey
