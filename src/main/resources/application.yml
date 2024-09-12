@@ -28,6 +28,9 @@ server:
     port: 8080
     servlet:
         context-path: /ref
+        session:
+            cookie:
+                name: REF_SESSION
 
 jwt:
     issuer: skdlawo5985@gmail.com
