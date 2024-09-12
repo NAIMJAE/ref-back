@@ -1,0 +1,40 @@
+TictactoeSocketHandler 로드맵
+
+0 - 방배정 없는 플레이어
+1 - 1번방 / 2 - 2번방 / 3 - 3번방
+
+ConcurrentMap<String, Map<String, WebSocketSession>> roomSessions = new ConcurrentHashMap<>();
+{0 : {palyerA-sessionId : SocketSeesion, palyerB-sessionId : SocketSeesion,}}
+{1 : {palyerC-sessionId : SocketSeesion}
+{2 : {palyerD-sessionId : SocketSeesion, palyerE-sessionId : SocketSeesion,}}
+{3 : null}
+
+// afterConnectionEstablished(WebSocketSession session)
+   - 접속한 사용자의 소켓세션을 저장해야 함
+   - 모든 사용자에게 현재 게임방 인원수 체크해서 전달해야함
+
+// handleTextMessage(WebSocketSession session, TextMessage message)
+   #1 ) 게임방에 접속했을때 (+ 방을 이동했을때)
+      - Established에서 저장했던 소켓세션에 방번호를 매칭시켜야 함
+      - 방 이동시에는 이미 매칭되어 있는 방번호를 변경해야 함
+      - 플레이어 심볼을 계산해서 전달해야 함
+        -> 1. session에서 Id 추출
+            2. roomSessions을 for문 돌고 일치하는 sessionId의 value를 삭제하고
+            3. 가지고 온 방번호 key값의 value로 새로운 Map 추가 (해당 사용자의 sessionId 사용해서)
+            4. 0번방 빼고 나머지 방의 size가 2이상인지 체크 (이때 플레이어의 심볼 계산도 같이하면 됨)
+
+      - 게임방 인원수 체크 업데이트
+
+   #2 ) 게임중일 때, 플레이어가 보드를 선택했을때
+      - 변경된 보드정보를 같은 방에 있는 플레이어에게 전달
+
+   #3 ) 게임이 끝났을 때
+      - 그냥 전달 해주기
+
+// afterConnectionClosed(WebSocketSession session, CloseStatus status)
+   - 방을 나가면 게임방에 저장되어 있는 해당 플레이어 세션 만료시키기
+      -> for문 돌려서 일치하는 sessionId의 value값 삭제하고 Key값(방번호) 저장해두기
+   - 게임방 인원수 체크 업데이트
+   - 같은 룸에 속한 사람의 플레이어 심볼 업데이트
+      -> 1. 저장해둔 방번호값 가지고 와서 인원수 조회해서 1명 이상이면
+          2. 플레이어 세션 조회해서 무조건 x 보내주면 됨
