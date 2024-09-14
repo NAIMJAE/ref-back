@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Enumeration;
 
@@ -67,5 +65,15 @@ public class DataStorageController {
         }
 
         return dataStorageService.dataStorageCheck(httpRequest, session);
+    }
+
+    // add cart
+    @GetMapping("/datastorage/managementCart")
+    public ResponseEntity<?> managementCart(@RequestParam String type, @RequestParam String prodId, HttpSession session) {
+
+        log.info("type : " + type);
+        log.info("type : " + prodId);
+
+        return dataStorageService.managementCart(type, prodId, session);
     }
 }

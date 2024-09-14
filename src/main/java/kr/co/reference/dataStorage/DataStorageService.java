@@ -16,10 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ import java.util.Optional;
 public class DataStorageService {
 
     private final UserRepository userRepository;
+    private final UserCartRepository userCartRepository;
     private final PasswordEncoder passwordEncoder;
 
     // Session Login Example
@@ -141,5 +144,48 @@ public class DataStorageService {
         headers.add(HttpHeaders.SET_COOKIE, "REF_INFO="+ encodedUserInfo + "; Path=/;");
 
         return headers;
+    }
+
+    // Management Cart
+    public ResponseEntity<?> managementCart(String type, String prodId, HttpSession session) {
+        if (type.equals("insert")) {
+            String uid = (String) session.getAttribute("userId");
+            // cart DB 조회 후 이미 추가된 상품인지 확인
+            List<UserCart> userCartList = userCartRepository.findByUidAndProdId(uid, prodId);
+
+            if (userCartList.isEmpty()) {
+                UserCart newUserCart = new UserCart();
+                newUserCart.setUid(uid);
+                newUserCart.setProdId(prodId);
+
+                // 없는 상품이면 DB에 추가
+                userCartRepository.save(newUserCart);
+
+                // 그리고 사용자 세션에도 추가
+                String userCartSession = (String) session.getAttribute("userCart");
+                String[] userCartArr = userCartSession.split(",");
+                String newUserCartSession = String.join(",", userCartArr); // 여기 문제임 없는 세션이라
+                session.setAttribute("userCart", newUserCartSession);
+
+                // Cart DB에 있는 상품 번호 반환
+                return ResponseEntity.status(HttpStatus.OK).body(newUserCartSession);
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("이미 추가된 상품");
+            }
+
+            
+        } else if (type.equals("delete")) {
+
+            // Cart DB 조회 후 추가되어 있는 상품이 맞는지 확인
+            
+            // 추가되어 있는 상품이면 DB 삭제
+            
+            // 그리고 사용자 세션에서도 삭제
+            
+            // Cart DB에 있는 상품 번호 반환
+            
+        }
+
+        return null;
     }
 }
