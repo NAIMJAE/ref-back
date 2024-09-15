@@ -21,12 +21,9 @@ public class DataStorageController {
 
     // Session Login Example
     @PostMapping("/datastorage/login")
-    public ResponseEntity<?> dataStorageLogin(@RequestBody UserDTO userDTO, HttpSession session) {
+    public ResponseEntity<?> dataStorageLogin(@RequestBody UserDTO userDTO, HttpSession session, HttpServletRequest httpRequest) {
 
-        log.info("uid : " + userDTO.getUid());
-        log.info("pw : " + userDTO.getPassword());
-
-        return dataStorageService.dataStorageLogin(userDTO, session);
+        return dataStorageService.dataStorageLogin(userDTO, session, httpRequest);
     }
 
     // Login Session Check
@@ -70,9 +67,6 @@ public class DataStorageController {
     // add cart
     @GetMapping("/datastorage/managementCart")
     public ResponseEntity<?> managementCart(@RequestParam String type, @RequestParam String prodId, HttpSession session) {
-
-        log.info("type : " + type);
-        log.info("type : " + prodId);
 
         return dataStorageService.managementCart(type, prodId, session);
     }
