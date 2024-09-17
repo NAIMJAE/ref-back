@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Enumeration;
 
@@ -23,12 +21,9 @@ public class DataStorageController {
 
     // Session Login Example
     @PostMapping("/datastorage/login")
-    public ResponseEntity<?> dataStorageLogin(@RequestBody UserDTO userDTO, HttpSession session) {
+    public ResponseEntity<?> dataStorageLogin(@RequestBody UserDTO userDTO, HttpSession session, HttpServletRequest httpRequest) {
 
-        log.info("uid : " + userDTO.getUid());
-        log.info("pw : " + userDTO.getPassword());
-
-        return dataStorageService.dataStorageLogin(userDTO, session);
+        return dataStorageService.dataStorageLogin(userDTO, session, httpRequest);
     }
 
     // Login Session Check
@@ -67,5 +62,12 @@ public class DataStorageController {
         }
 
         return dataStorageService.dataStorageCheck(httpRequest, session);
+    }
+
+    // add cart
+    @GetMapping("/datastorage/managementCart")
+    public ResponseEntity<?> managementCart(@RequestParam String type, @RequestParam String prodId, HttpSession session) {
+
+        return dataStorageService.managementCart(type, prodId, session);
     }
 }
