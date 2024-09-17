@@ -70,17 +70,18 @@ public class DataStorageService {
 
                 // cookie에서 cart정보 가져오기
                 Cookie cartCookie = getCookie(cookies, "REF_CART");
-
                 log.info("cartCookie : " + cartCookie);
+                log.info("cartCookie : " + cartCookie.getValue());
 
                 if (cartCookie != null) {
-                    String[] cartListArr = cartCookie.getValue().split(",");
+                    String[] cartListArr = cartCookie.getValue().split("\\.");
+                    log.info("cartListArr : " + Arrays.toString(cartListArr));
 
                     List<UserCart> userCartList = userCartRepository.findByUid(foundUser.getUid());
                     List<String> cartProdIdList = userCartList.stream()
                             .map(UserCart::getProdId)
                             .toList();
-
+                    log.info("userCartList : " + userCartList);
                     // Cart에 없는 상품 DB 저장
                     for (String prodId : cartListArr) {
                         if (!cartProdIdList.contains(prodId)) {
@@ -125,6 +126,7 @@ public class DataStorageService {
         Cookie loginCookie = getCookie(cookies, "REF_LOGIN");
         Cookie cartCookie = getCookie(cookies, "REF_CART");
 
+        // Auto Login 과 Login Cookie 가 null이 아닐 때 -> Login 처리 안됬을 때
         if (autoCookie != null && loginCookie == null) {
             String userId = autoCookie.getValue();
 
@@ -148,13 +150,7 @@ public class DataStorageService {
                 return ResponseEntity.ok().headers(addHeaders).body("SUCCESS LOGIN");
             }
         }
-        if (cartCookie == null) {
-            log.info("ㅎ2");
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.SET_COOKIE, "REF_CART=; Path=/; Max-Age=604800;");
 
-            return ResponseEntity.ok().headers(headers).body("CREATE CART");
-        }
         return null;
     }
 
@@ -242,7 +238,7 @@ public class DataStorageService {
         List<String> cartProdIdList = userCartList.stream()
                 .map(UserCart::getProdId)
                 .toList();
-        String newUserCartList = String.join(",", cartProdIdList);
+        String newUserCartList = String.join(".", cartProdIdList);
         session.setAttribute("userCart", newUserCartList);
         return newUserCartList;
     }
