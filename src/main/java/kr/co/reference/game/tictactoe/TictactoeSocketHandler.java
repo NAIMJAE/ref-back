@@ -20,13 +20,9 @@ import java.util.concurrent.ConcurrentMap;
 @RequiredArgsConstructor
 @Component
 public class TictactoeSocketHandler extends TextWebSocketHandler {
-    // 방 별로 세션을 관리하기 위한 ConcurrentMap
-    // 게임 플레이할 때 사용
-    private static final ConcurrentMap<String, Map<String, WebSocketSession>> roomSessions = new ConcurrentHashMap<>();
-
-    // 현재 같은 소켓에 연결된 사용자 목록을 관리하기 위한 ConcurrentMap
-    // 방 인원 관리할 때 사용
-    private final Map<String, List<String>> memberSessions = new ConcurrentHashMap<>();
+    // 방 별로 세션을 관리하기 위한 ConcurrentMap<방번호, Map<Socket세션ID, WebSocketSession>>
+    // 0 - 대기실 / 1, 2, 3 - 게임방
+    private static final ConcurrentMap<Integer, Map<String, WebSocketSession>> roomSessions = new ConcurrentHashMap<>();
 
     // JSON 변환을 위한 ObjectMapper
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,25 +31,12 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
-        log.info("Here ... 1");
-        // 방별 현재 인원수 보내주기
-        Map<String, Object> response = new HashMap<>();
-        response.put("type", "roomlist");
+        // 1) 접속한 사용자의 소켓세션을 저장
+        Map<String, WebSocketSession> lobby = roomSessions.computeIfAbsent(0, k -> new ConcurrentHashMap<>());
+        lobby.put(session.getId(), session);
 
-        // 초기 연결 시 roomSessions에 세션 추가
-        roomSessions.computeIfAbsent("", k -> new ConcurrentHashMap<>()).put(session.getId(), session);
-        session.getAttributes().put("roomId", "");
-
-        Map<String, Object> roomData = new HashMap<>();
-        for (String roomId : memberSessions.keySet()) {
-            roomData.put(roomId, memberSessions.get(roomId).size());
-        }
-        response.put("rooms", roomData);
-        String jsonResponse = objectMapper.writeValueAsString(response);
-        session.sendMessage(new TextMessage(jsonResponse));
-        // 방에 새로운 플레이어 추가
-        log.info("연결된 소켓 세션 아이디 : " + session.getId());
-
+        // 2) 모든 사용자에게 현재 게임방 인원수 체크해서 전달
+        broadcastRoomStatus();
     }
 
     // 웹 소켓이 클라이언트로부터 메세지를 전송받았을 때 실행되는 메서드
@@ -65,86 +48,27 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
 
         // 메시지에 이미 type 필드가 포함되어 있는 경우 처리
         String type = (String) messageMap.get("type");
+        int newRoomId = (Integer) messageMap.get("roomId");
+        log.info("newRoomId : " + newRoomId);
 
-        log.info("소켓 메세지 타입 : "+ type);
-
-        if ("leaveRoom".equals(type)) {
-            // 클라이언트의 게임 종료
-            String userId = (String) messageMap.get("userId");
-            String roomId = String.valueOf(messageMap.get("roomId"));
-
-            log.info("leaveRoom userId : " + userId + " | roomId : " + roomId);
-
-            // 기존 방에서 사용자 제거
-            if (roomId != null && !roomId.isEmpty()) {
-                List<String> roomMembers = memberSessions.get(roomId);
-                if (roomMembers != null) {
-                    roomMembers.remove(userId);
+        // 1) 게임방에 접속했을때 (+ 방을 이동했을때)
+        if("moveRoom".equals(type)) {
+            // #1 roomSessions 방번호를 매칭
+            int oldRoomId = -1;
+            for (Map.Entry<Integer, Map<String, WebSocketSession>> entry : roomSessions.entrySet()) {
+                if (entry.getValue().remove(session.getId()) != null) {
+                    oldRoomId = entry.getKey();
+                    break;
                 }
             }
 
-            // 같은 방의 플레이어의 심볼 변경 전송
-            // 방에 남은 사용자가 있으면, 해당 사용자에게 새로운 역할(0)을 할당
-            if (!memberSessions.get(roomId).isEmpty()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("type", "playerLeft");
-                response.put("player", 0);
-                String jsonResponse = objectMapper.writeValueAsString(response);
-
-                try {
-                   log.info("심볼 변경 전송");
-                   log.info("roomId : " + roomId);
-                   log.info("roomSessions : " + roomSessions);
-                   log.info("roomSessions.get(roomId) : " + roomSessions.get(roomId));
-                   log.info("roomSessions.values() : " + roomSessions.values());
-
-
-
-                    for (WebSocketSession webSocketSession : roomSessions.get(roomId).values()) {
-                        log.info("심볼 변경 전송 22 ");
-                        if (webSocketSession.isOpen()) {
-                            webSocketSession.sendMessage(new TextMessage(jsonResponse));
-                        }
-                    }
-                }catch (Exception e) {
-                    log.error(e.getMessage());
-                }
-            }
-
-            // 모든 클라이언트에게 현재 방들의 상태를 업데이트하는 메시지 전송
-            broadcastRoomStatus();
-
-        }else if("moveRoom".equals(type)) {
-            // 클라이언트의 방 이동 요청
-            String userId = (String) messageMap.get("userId");
-            String newRoomId = String.valueOf(messageMap.get("roomId"));
-
-            log.info("userId : " + userId);
-            log.info("roomId : " + newRoomId);
-
-            // 사용자의 기존 방 ID를 가져옴
-            String oldRoomId = (String) session.getAttributes().get("roomId");
-
-            // 기존 방에서 사용자 제거
-            if (oldRoomId != null && !oldRoomId.isEmpty()) {
-                List<String> oldRoomMembers = memberSessions.get(oldRoomId);
-                if (oldRoomMembers != null) {
-                    oldRoomMembers.remove(userId);
-                    log.info("사용자 제거됨: " + userId + " from room: " + oldRoomId);
-                }
-                Map<String, WebSocketSession> oldRoomSessions = roomSessions.get(oldRoomId);
-                if (oldRoomSessions != null) {
-                    oldRoomSessions.remove(session.getId());
-                    log.info("세션 제거됨: " + session.getId() + " from room: " + oldRoomId);
-                }
-            }
-
-            session.getAttributes().put("roomId", newRoomId);
+            Map<String, WebSocketSession> newRoom = roomSessions.computeIfAbsent(newRoomId, k -> new ConcurrentHashMap<>());
+            newRoom.put(session.getId(), session);
 
             // 현재 방에 있는 사용자의 수를 체크
-            int playerCount = memberSessions.computeIfAbsent(newRoomId, k -> new ArrayList<>()).size();
-            log.info("playerCount : " + playerCount);
-            if (playerCount >= 2) {
+            int playerCount = roomSessions.get(newRoomId).size();
+            if (playerCount > 2) {
+                newRoom.remove(session.getId());
                 // 정원 초과 메시지를 전송
                 Map<String, Object> response = new HashMap<>();
                 response.put("type", "full");
@@ -156,94 +80,119 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
                 log.info("방이 가득 찼습니다. : " + session.getId());
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
-            }
+            }else{
+                // #1 - 1 게임방에 들어가 있는 상태였다면 기존 방에 들어가있는 상대 플레이어 심볼 업데이트
+                if (oldRoomId != 0 && roomSessions.containsKey(oldRoomId)) {
+                    Map<String, Object> updateSymbolMessage = new HashMap<>();
+                    updateSymbolMessage.put("type", "opponentLeft");
+                    updateSymbolMessage.put("player", 0);
 
-            // memberSessions에 사용자를 추가
-            /*
-            * - computeIfAbsent :
-            *   roomId가 memberSessions 맵에 이미 존재하는지 확인
-            *   만약 존재하지 않으면, 람다식 k -> new ArrayList<>()가 실행되어 new ArrayList<>()를 생성하고, 이를 roomId에 대한 값으로 맵에 추가
-            */
-            memberSessions.computeIfAbsent(newRoomId, k -> new ArrayList<>()).add(userId);
-
-            // roomSessions에 WebSocketSession 추가
-            log.info("newRoomId : " + newRoomId);
-            log.info("session.getId() : " + session.getId());
-
-            roomSessions.computeIfAbsent(newRoomId, k -> new ConcurrentHashMap<>()).put(session.getId(), session);
-
-            log.info("roomSessions.get(1) : " + roomSessions.get("1"));
-            log.info("roomSessions.get(2) : " + roomSessions.get("2"));
-            log.info("roomSessions.get(3) : " + roomSessions.get("3"));
-
-            // 클라이언트에게 역할을 전달 (0: 먼저 움직임, 1: 나중에 움직임)
-            Map<String, Object> response = new HashMap<>();
-            response.put("type", "moveRoom");
-            response.put("roomId", newRoomId);
-            response.put("player", playerCount);
-
-            String jsonResponse = objectMapper.writeValueAsString(response);
-
-            log.info("역할 전달 : " + jsonResponse);
-            session.sendMessage(new TextMessage(jsonResponse));
-            // 모든 클라이언트에게 현재 방들의 상태를 업데이트하는 메시지 전송
-            broadcastRoomStatus();
-        }else if ("makeMove".equals(type) || "gameOver".equals(type)) {
-            // 메시지의 타입에 따라 처리
-            String roomId = (String) messageMap.get("roomId");
-
-            log.info("makeMove roomId : " + roomId);
-            log.info("makeMove roomSessions : " + roomSessions);
-            log.info("makeMove roomSessions.get(roomId) : " + roomSessions.get(roomId));
-
-            // 같은 방에 있는 모든 클라이언트에게 메시지 방송
-            for (WebSocketSession webSocketSession : roomSessions.get(roomId).values()) {
-
-                if (webSocketSession.isOpen()) {
-                    webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageMap)));
+                    // 같은 방의 유저에게 메시지 전송
+                    multicast(oldRoomId, updateSymbolMessage);
                 }
+
+                // #2 플레이어 심볼을 계산해서 전달 (0: 먼저 움직임, 1: 나중에 움직임)
+                Map<String, Object> response = new HashMap<>();
+                response.put("type", "moveRoom");
+                response.put("roomId", newRoomId);
+                response.put("player", playerCount);
+
+
+                String jsonResponse = objectMapper.writeValueAsString(response);
+                session.sendMessage(new TextMessage(jsonResponse));
+
+                // #3 모든 사용자에게 현재 게임방 인원수 체크해서 전달
+                broadcastRoomStatus();
             }
+
+        }
+
+        // 2) 게임중일 때 (그대로 전달)
+        else if ("makeMove".equals(type)) {
+            log.info("게임 진행 : "+ messageMap);
+            multicast(newRoomId, messageMap);
+        }
+        // 3) 게임이 끝났을 때
+        else if ("gameOver".equals(type)) {
+            // #1 게임 결과 전달
+            multicast(newRoomId, messageMap);
+
+            // #2 해당 방의 모든 플레이어를 방에서 제거하고 대기실로 이동
+            Map<String, WebSocketSession> room = roomSessions.get(newRoomId);
+            if (room != null) {
+                for (WebSocketSession playerSession : room.values()) {
+                    Map<String, WebSocketSession> lobby = roomSessions.computeIfAbsent(0, k -> new ConcurrentHashMap<>());
+                    lobby.put(playerSession.getId(), playerSession);
+                }
+                room.clear();
+            }
+            multicast(newRoomId, messageMap);
+        }
+        // 4) 방을 나갈 때
+        else if ("leaveRoom".equals(type)) {
+
+            // #1 상대방에게 플레이어가 떠났음을 알림
+            if (newRoomId != 0) {
+                Map<String, Object> opponentLeftMessage = new HashMap<>();
+                opponentLeftMessage.put("type", "opponentLeft");
+
+                multicast(newRoomId, opponentLeftMessage);
+            }
+
+            // #2 세션을 대기실로 이동
+            Map<String, WebSocketSession> lobby = roomSessions.computeIfAbsent(0, k -> new ConcurrentHashMap<>());
+            lobby.put(session.getId(), session);
+
+            // #4 방 상태 업데이트
+            broadcastRoomStatus();
         }
     }
 
     // 웹 소켓이 클라이언트와 연결이 끊겼을 때 실행되는 메서드
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String roomId = getRoomId(session);  // 사용자의 현재 방 ID를 가져옵니다.
+        int roomId = -1; // 플레이어가 속한 방 번호를 저장하기 위한 변수
 
-        if (roomId != null) {
-            Map<String, WebSocketSession> sessions = roomSessions.get(roomId);
-            // 세션 제거
-            if (sessions != null) {
-                sessions.remove(session.getId());
+        // 1) 게임방에 저장되어 있는 해당 플레이어 세션 만료시키기
+        for (Map.Entry<Integer, Map<String, WebSocketSession>> entry : roomSessions.entrySet()) {
+            if (entry.getValue().remove(session.getId()) != null) {
+                roomId = entry.getKey(); // 세션이 속한 방 번호를 저장합니다.
+                log.info("나갈 RoomId : " + roomId);
+                break;
+            }
+        }
+
+        // 2) 모든 사용자에게 현재 게임방 인원수 체크해서 전달
+        broadcastRoomStatus();
+
+        // 3) 같은 룸에 속한 사람의 플레이어 심볼 업데이트
+        if (roomId != -1 && roomId != 0) {
+            Map<String, WebSocketSession> room = roomSessions.get(roomId);
+            if (room != null && room.size() > 0) {
+                Map<String, Object> updateSymbolMessage = new HashMap<>();
+                updateSymbolMessage.put("type", "opponentLeft");
+                updateSymbolMessage.put("player", 0);
+
+                // 같은 방에 남아 있는 사용자에게 메시지 전송
+                multicast(roomId, updateSymbolMessage);
             }
         }
     }
 
-    // roomId를 session에서 가져오는 메서드
-    private String getRoomId(WebSocketSession session) {
-        return (String) session.getAttributes().get("roomId");
-    }
-
-    // 모든 클라이언트에게 방 상태를 전송하는 메서드
+    // 모든 클라이언트에게 현재 게임방 인원수 체크해서 전송하는 메서드
     private void broadcastRoomStatus() {
         try {
-            log.info("브로드캐스트");
+            Map<Integer, Object> roomData = new HashMap<>();
+            for(int roomId : roomSessions.keySet()){
+                roomData.put(roomId, roomSessions.get(roomId).size());
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("type", "roomlist");
-
-            Map<String, Object> roomData = new HashMap<>();
-            for (String roomId : memberSessions.keySet()) { // memberSessions 사용
-                log.info("roomId : " + roomId);
-                log.info("roomId size: " + memberSessions.get(roomId).size());
-                roomData.put(roomId, memberSessions.get(roomId).size());
-            }
             response.put("rooms", roomData);
 
             String jsonResponse = objectMapper.writeValueAsString(response);
 
-            // 모든 클라이언트에게 방 상태 전송
-            log.info("roomSessions.values() : " + roomSessions.values());
             for (Map<String, WebSocketSession> sessions : roomSessions.values()) {
                 for (WebSocketSession webSocketSession : sessions.values()) {
                     if (webSocketSession.isOpen()) {
@@ -258,9 +207,21 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
                     }
                 }
             }
-        } catch (Exception e) {
-            log.error("브로드캐스트 중 예외 발생: ", e);
+        }catch (Exception e){
+            log.error(e.getMessage());
         }
     }
 
+    // 같은 방 유저에게 전송하는 메서드
+    private void multicast(int roomId, Map<String, Object> messageMap) {
+        try {
+            for (WebSocketSession webSocketSession : roomSessions.get(roomId).values()) {
+                if (webSocketSession.isOpen()) {
+                    webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageMap)));
+                }
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
 }
