@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "chatbotThread")
+@Table(name = "cb_thread")
 public class ChatBotThread {
 
     @Id
