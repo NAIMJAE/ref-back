@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "searchIndex")
+@Table(name = "se_searchIndex")
 public class SearchIndex {
     @Id
     private String term;

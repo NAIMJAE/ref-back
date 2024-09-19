@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "reference")
+@Table(name = "aa_reference")
 public class Reference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -34,29 +34,17 @@ public class DataStorageService {
         Cookie[] cookies = httpRequest.getCookies();
         Optional<User> optUser = userRepository.findById(userDTO.getUid());
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                log.info("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ");
-                log.info("Cookie Name: " + cookie.getName());
-                log.info("Cookie Value: " + cookie.getValue());
-                log.info("Cookie Path: " + cookie.getPath());
-                log.info("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ");
-            }
-        } else {
-            log.info("No Cookies Found.");
-        }
-
         if (optUser.isPresent()) {
             User foundUser = optUser.get();
 
             if (passwordEncoder.matches(userDTO.getPassword(), foundUser.getPassword())) {
-
                 String sessionId = session.getId();
                 log.info("사용자 검증 완료 / 기존 세션 ID: " + sessionId);
 
-                // 기존 세션 무효화 및 새 세션 추가 코드 필요
+                // 기존 세션 무효화 및 새 세션 추가 코드
                 session.invalidate();
                 session = httpRequest.getSession(true);
+                log.info("세션 무효화 완료 / 새로운 세션 ID: " + session.getId());
 
                 // 사용자 정보 Session에 추가
                 session.setAttribute("userId", foundUser.getUid());
@@ -70,18 +58,14 @@ public class DataStorageService {
 
                 // cookie에서 cart정보 가져오기
                 Cookie cartCookie = getCookie(cookies, "REF_CART");
-                log.info("cartCookie : " + cartCookie);
-                log.info("cartCookie : " + cartCookie.getValue());
 
                 if (cartCookie != null) {
                     String[] cartListArr = cartCookie.getValue().split("\\.");
-                    log.info("cartListArr : " + Arrays.toString(cartListArr));
-
                     List<UserCart> userCartList = userCartRepository.findByUid(foundUser.getUid());
                     List<String> cartProdIdList = userCartList.stream()
                             .map(UserCart::getProdId)
                             .toList();
-                    log.info("userCartList : " + userCartList);
+
                     // Cart에 없는 상품 DB 저장
                     for (String prodId : cartListArr) {
                         if (!cartProdIdList.contains(prodId)) {
@@ -95,8 +79,6 @@ public class DataStorageService {
 
                 // userCart session 생성
                 String newUserCartList = createCartSession(foundUser.getUid(), session);
-
-                log.info("newUserCartList : " + newUserCartList);
 
                 // REF_CART Cookie 초기화
                 addHeaders.add(HttpHeaders.SET_COOKIE, "REF_CART=; Path=/; Max-Age=0;");
@@ -124,7 +106,6 @@ public class DataStorageService {
         // Auto Login Check
         Cookie autoCookie = getCookie(cookies, "REF_AUTO");
         Cookie loginCookie = getCookie(cookies, "REF_LOGIN");
-        Cookie cartCookie = getCookie(cookies, "REF_CART");
 
         // Auto Login 과 Login Cookie 가 null이 아닐 때 -> Login 처리 안됬을 때
         if (autoCookie != null && loginCookie == null) {
