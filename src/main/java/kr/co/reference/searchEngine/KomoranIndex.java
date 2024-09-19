@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "komoranIndex")
+@Table(name = "se_komoranIndex")
 public class KomoranIndex {
     @Id
     private String term;
