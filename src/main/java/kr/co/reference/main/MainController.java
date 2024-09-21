@@ -19,4 +19,11 @@ public class MainController {
         return mainService.refList();
     }
 
+    // AWS 대상 그룹 Health Check
+    @GetMapping("/health-check")
+    public ResponseEntity<?> checkHealthStatus() {
+
+        return ResponseEntity.ok().body("");
+    }
+
 }
