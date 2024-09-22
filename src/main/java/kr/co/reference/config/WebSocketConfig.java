@@ -16,7 +16,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(tictactoeSocketHandler, "/tictactoe").setAllowedOrigins("*");
+        registry.addHandler(tictactoeSocketHandler, "/tictactoe")
+                .setAllowedOrigins("http://localhost:3000", "https://refcode.info");
 
     }
 }
