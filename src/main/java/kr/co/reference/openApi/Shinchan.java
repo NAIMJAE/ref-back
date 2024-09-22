@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "shinchan")
+@Table(name = "oa_shinchan")
 public class Shinchan {
     @Id
     private int charNo;
