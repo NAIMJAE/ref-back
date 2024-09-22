@@ -30,11 +30,11 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
     // 웹 소켓 클라이언트와 연결
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-
+        log.info("연결 요청 1` ");
         // 1) 접속한 사용자의 소켓세션을 저장
         Map<String, WebSocketSession> lobby = roomSessions.computeIfAbsent(0, k -> new ConcurrentHashMap<>());
         lobby.put(session.getId(), session);
-
+        log.info("연결 요청 2 " + session.getId());
         // 2) 모든 사용자에게 현재 게임방 인원수 체크해서 전달
         broadcastRoomStatus();
     }
@@ -181,6 +181,7 @@ public class TictactoeSocketHandler extends TextWebSocketHandler {
 
     // 모든 클라이언트에게 현재 게임방 인원수 체크해서 전송하는 메서드
     private void broadcastRoomStatus() {
+        log.info("브로드 캐스트 ");
         try {
             Map<Integer, Object> roomData = new HashMap<>();
             for(int roomId : roomSessions.keySet()){
