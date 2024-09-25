@@ -81,12 +81,12 @@ public class DataStorageService {
                 String newUserCartList = createCartSession(foundUser.getUid(), session);
 
                 // REF_CART Cookie 초기화
-                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_CART=; Path=/; secure=true; sameSite=none; Max-Age=0;");
-                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure=true; sameSite=none; Path=/;");
+                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_CART=; Path=/; secure; sameSite=none; domain=.refcode.info; Max-Age=0;");
+                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure; sameSite=none; domain=.refcode.info; Path=/;");
 
                 // 자동 로그인 체크 (기간 7일)
                 if (userDTO.isAutoLogin()) {
-                    addHeaders.add(HttpHeaders.SET_COOKIE, "REF_AUTO="+ foundUser.getUid() +"; Path=/; secure=true; sameSite=none; Max-Age=604800;");
+                    addHeaders.add(HttpHeaders.SET_COOKIE, "REF_AUTO="+ foundUser.getUid() +"; Path=/; secure; sameSite=none; domain=.refcode.info; Max-Age=604800;");
                 }
 
                 // .header() 메서드를 사용해 쿠키를 추가
@@ -127,8 +127,8 @@ public class DataStorageService {
                 HttpHeaders addHeaders = AddCookie(foundUser, headers);
                 
                 // 자동 로그인 갱신
-                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_AUTO=" + foundUser.getUid() + "; secure=true; sameSite=none; Path=/; Max-Age=604800;");
-                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure=true; sameSite=none; Path=/;");
+                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_AUTO=" + foundUser.getUid() + "; secure; sameSite=none; domain=.refcode.info; Path=/; Max-Age=604800;");
+                addHeaders.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure; sameSite=none; domain=.refcode.info; Path=/;");
                 
                 return ResponseEntity.ok().headers(addHeaders).body("SUCCESS LOGIN");
             }
@@ -171,7 +171,7 @@ public class DataStorageService {
 
         // Header에 Cookie 추가
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure=true; sameSite=none; Path=/;");
+        headers.add(HttpHeaders.SET_COOKIE, "REF_USER_CART=" + newUserCartList + "; secure; sameSite=none; domain=.refcode.info; Path=/;");
 
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body("SUCCESS ADD PRODUCT");
     }
@@ -208,8 +208,8 @@ public class DataStorageService {
             return null;
         }
         // 추가 쿠키(로그인 검증, 사용자 정보)를 담는 Header 생성
-        headers.add(HttpHeaders.SET_COOKIE, "REF_LOGIN=true; secure=true; sameSite=none; Path=/;");
-        headers.add(HttpHeaders.SET_COOKIE, "REF_INFO="+ encodedUserInfo + "; secure=true; sameSite=none; Path=/;");
+        headers.add(HttpHeaders.SET_COOKIE, "REF_LOGIN=true; secure; sameSite=none; domain=.refcode.info; Path=/;");
+        headers.add(HttpHeaders.SET_COOKIE, "REF_INFO="+ encodedUserInfo + "; secure; sameSite=none; domain=.refcode.info; Path=/;");
         log.info("headers : " + headers);
         return headers;
     }
