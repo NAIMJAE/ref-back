@@ -33,10 +33,10 @@ public class DataStorageService {
     public ResponseEntity<?> dataStorageLogin(UserDTO userDTO, HttpSession session, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         Optional<User> optUser = userRepository.findById(userDTO.getUid());
-        log.info("로그인...1");
+
         if (optUser.isPresent()) {
             User foundUser = optUser.get();
-            log.info("로그인...2");
+
             if (passwordEncoder.matches(userDTO.getPassword(), foundUser.getPassword())) {
                 String sessionId = session.getId();
                 log.info("사용자 검증 완료 / 기존 세션 ID: " + sessionId);
