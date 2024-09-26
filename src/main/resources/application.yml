@@ -31,6 +31,9 @@ server:
         session:
             cookie:
                 name: REF_SESSION
+                secure: true
+                http-only: true
+                same-site: none
 
 jwt:
     issuer: skdlawo5985@gmail.com
