@@ -45,7 +45,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(visitorTrackingInterceptor)
                 .addPathPatterns("/*")
-                .excludePathPatterns("/tictactoe");
+                .excludePathPatterns("/tictactoe", "/health-check");
 
     }
 }
