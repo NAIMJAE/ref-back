@@ -26,10 +26,8 @@ public class MyUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 계정이 갖는 권한 목록
-        log.info("user.getRole() : " + user.getRole());
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRole()));
-        log.info("authorities33333: " + authorities);
         return authorities;
     }
     @Override
