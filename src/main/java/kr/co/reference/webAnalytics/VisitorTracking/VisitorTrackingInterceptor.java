@@ -10,6 +10,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.io.Console;
 import java.time.*;
 
 @Component
@@ -25,11 +26,11 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
 
         // 1) viewCount 쿠키 조회
         Cookie[] cookies = request.getCookies();
-        Cookie visitRecordCookie = getCookie(cookies, "REF_Visit_Record");
+        Cookie visitRecordCookie = getCookie(cookies, "REF_VISIT_RECORD");
 
         // 2) 쿠키가 있을 경우 (기존 방문자)
         if (visitRecordCookie != null) {
-            log.info("기존 방문자: REF_Visit_Record 쿠키 존재");
+            log.info("기존 방문자: REF_VISIT_RECORD 쿠키 존재");
             return true; // 요청 계속 진행
         }
 
@@ -41,7 +42,7 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             int maxAge = (int) (midnight.toEpochSecond() - now.atZone(ZoneId.of("Asia/Seoul")).toEpochSecond());
 
             // #2 신규 Visit_Record 쿠키 생성
-            ResponseCookie visitRecord = ResponseCookie.from("REF_Visit_Record", now.toString() )
+            ResponseCookie visitRecord = ResponseCookie.from("REF_VISIT_RECORD", now.toString() )
                     .path("/")
                     .maxAge(maxAge + 32400)
                     .httpOnly(true)
@@ -55,30 +56,29 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             // #4 방문자 정보 저장
             String userAgent = request.getHeader("User-Agent");
             String referer = request.getHeader("Referer");
-            String language = request.getHeader("Accept-Language");
+            String rawLanguage = request.getHeader("Accept-Language");
+            String language = (rawLanguage != null && rawLanguage.length() >= 2) ? rawLanguage.substring(0, 5) : "unknown";
             String xForwarded = request.getHeader("X-Forwarded-For");
-            String region = request.getRemoteAddr();
 
             log.info("userAgent : " + userAgent);
             log.info("referer : " + referer);
             log.info("language : " + language);
             log.info("xForwarded : " + xForwarded);
-            log.info("region : " + region);
 
             VisitLog visitLog = VisitLog.builder()
                     .date(LocalDate.now())
                     .time(LocalTime.now())
                     .language(language)
                     .referer(referer)
-                    .vtAgent(userAgent)
-                    .vtRegion(region)
+                    .vtAgent(getBrowser(userAgent))
+                    .vtRegion("unknown")
                     .build();
 
-            visitorTrackingService.insertVisitLog(visitLog);
+            visitorTrackingService.insertVisitLog(visitLog, xForwarded);
         }
         return true;
     }
-    // Find cookie
+    // Find Cookie
     public Cookie getCookie(Cookie[] cookies, String cookieName) {
         if (cookies != null) {
             // 쿠키 배열을 순회하며 특정 이름의 쿠키를 찾습니다.
@@ -89,5 +89,43 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             }
         }
         return null;
+    }
+    // 브라우저 이름 반환
+    public static String getBrowser(String userAgent) {
+        String browser = "";
+        String userAgentLower = userAgent.toLowerCase(); // 모든 문자를 소문자로 변환
+
+        if (userAgentLower.contains("trident") || userAgentLower.contains("msie")) {
+            // IE의 버전 판별
+            if (userAgentLower.contains("trident/7.0")) {
+                browser = "IE 11";
+            } else if (userAgentLower.contains("trident/6.0")) {
+                browser = "IE 10";
+            } else if (userAgentLower.contains("trident/5.0")) {
+                browser = "IE 9";
+            } else if (userAgentLower.contains("trident/4.0")) {
+                browser = "IE 8";
+            } else if (userAgentLower.contains("edge")) {
+                browser = "IE Edge";
+            }
+        } else if (userAgentLower.contains("whale")) {
+            browser = "Whale";
+        } else if (userAgentLower.contains("opera") || userAgentLower.contains("opr")) {
+            browser = "Opera";
+        } else if (userAgentLower.contains("firefox")) {
+            browser = "Firefox";
+        } else if (userAgentLower.contains("chrome")) {
+            if (userAgentLower.contains("edg")) {
+                browser = "Edge";
+            } else {
+                browser = "Chrome";
+            }
+        } else if (userAgentLower.contains("safari") && !userAgentLower.contains("chrome")) {
+            browser = "Safari";
+        } else {
+            browser = "Other";
+        }
+        log.info("browser : " + browser);
+        return browser;
     }
 }
