@@ -70,6 +70,9 @@ dependencies {
     // 형태소 분석기 KOMORAN
     implementation 'com.github.shin285:KOMORAN:3.3.9'
 
+    // Ip 지역 추적
+    implementation 'com.maxmind.geoip2:geoip2:4.0.0'
+
 }
 
 tasks.named('test') {
