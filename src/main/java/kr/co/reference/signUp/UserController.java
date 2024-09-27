@@ -51,7 +51,6 @@ public class UserController {
             // Security 인증 처리
             UsernamePasswordAuthenticationToken authToken
                     = new UsernamePasswordAuthenticationToken(username, password);
-
             // 사용자 DB 조회
             Authentication authentication = authenticationManager.authenticate(authToken);
 
