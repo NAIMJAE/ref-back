@@ -92,11 +92,9 @@ public class DataStorageService {
                 // .header() 메서드를 사용해 쿠키를 추가
                 return ResponseEntity.ok().headers(addHeaders).body("SUCCESS LOGIN");
             }else {
-                log.info("로그인...3");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("MISS MATCH PASSWORD");
             }
         }else {
-            log.info("로그인...4");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("MISS MATCH USER ID");
         }
     }
