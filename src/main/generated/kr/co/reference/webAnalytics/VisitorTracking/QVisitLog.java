@@ -31,7 +31,9 @@ public class QVisitLog extends EntityPathBase<VisitLog> {
 
     public final StringPath vtAgent = createString("vtAgent");
 
-    public final StringPath vtRegion = createString("vtRegion");
+    public final StringPath vtCity = createString("vtCity");
+
+    public final StringPath vtCountry = createString("vtCountry");
 
     public QVisitLog(String variable) {
         super(VisitLog.class, forVariable(variable));

@@ -32,30 +32,40 @@ public class VisitorTrackingService {
     public void insertVisitLog(VisitLog visitLog, String xForwarded){
 
         if(xForwarded != null) {
-            String location = getLocationFromIP(xForwarded);
+            Region location = getLocationFromIP(xForwarded);
+            // Region location = getLocationFromIP("3.34.115.39");
             log.info("지역 추출 : " + location);
-            visitLog.setVtRegion(location);
+            visitLog.setVtCity(location.city);
+            visitLog.setVtCountry(location.country);
         }
         visitLogRepository.save(visitLog);
     }
     // 지역 정보를 조회하는 메소드
-    public String getLocationFromIP(String ipAddress) {
+    public Region getLocationFromIP(String ipAddress) {
         try {
             // 리소스 폴더에 있는 GeoLite2 데이터베이스 파일 경로
-            File database = new File(getClass().getClassLoader().getResource("data/GeoLite2-City.mmdb").getFile());
+            File database = new File("uploads/data/GeoLite2-City.mmdb");
             DatabaseReader dbReader = new DatabaseReader.Builder(database).build();
 
             InetAddress ip = InetAddress.getByName(ipAddress);
             CityResponse response = dbReader.city(ip);
 
-            // Country country = response.getCountry();
+            Country country = response.getCountry();
             City city = response.getCity();
 
-            return city.getName(); // + ", " + country.getName();
+            return new Region(city.getName(), country.getName());
 
         } catch (Exception e) {
             log.error("GeoIP 조회 중 오류 발생: " + e.getMessage());
-            return "Unknown";
+            return new Region("unknown", "unknown");
         }
+    }
+}
+class Region {
+    String city, country;
+
+    Region(String city, String country) {
+        this.city = city;
+        this.country = country;
     }
 }
