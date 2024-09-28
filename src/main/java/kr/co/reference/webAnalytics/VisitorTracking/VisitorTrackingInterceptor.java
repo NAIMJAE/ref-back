@@ -71,7 +71,6 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
                     .language(language)
                     .referer(referer)
                     .vtAgent(getBrowser(userAgent))
-                    .vtRegion("unknown")
                     .build();
 
             visitorTrackingService.insertVisitLog(visitLog, xForwarded);

@@ -36,6 +36,9 @@ public class VisitLog {
     @Column(name = "vt_agent")
     private String vtAgent;
 
-    @Column(name = "vt_region")
-    private String vtRegion;
+    @Column(name = "vt_city")
+    private String vtCity;
+
+    @Column(name = "vt_country")
+    private String vtCountry;
 }
