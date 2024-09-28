@@ -61,6 +61,7 @@ public class VisitorTrackingService {
         }
     }
 }
+// 지역 정보
 class Region {
     String city, country;
 
