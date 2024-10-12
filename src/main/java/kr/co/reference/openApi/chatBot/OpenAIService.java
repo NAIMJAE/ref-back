@@ -165,7 +165,7 @@ public class OpenAIService {
             List<ChatDTO> messages = new ArrayList<>();
 
             // 응답을 파싱하여 메시지 리스트를 생성
-            JSONArray messageArray = jsonResponse.getJSONArray("data");
+            JSONArray messageArray = jsonResponse.getJSONArray("uploads/data");
             for (int i = 0; i < messageArray.length(); i++) {
                 JSONObject messageObject = messageArray.getJSONObject(i);
                 String role = messageObject.getString("role");
