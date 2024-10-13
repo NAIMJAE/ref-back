@@ -21,6 +21,8 @@ public class QReference extends EntityPathBase<Reference> {
 
     public final StringPath refApi = createString("refApi");
 
+    public final StringPath refCate = createString("refCate");
+
     public final DatePath<java.time.LocalDate> refCreate = createDate("refCreate", java.time.LocalDate.class);
 
     public final StringPath refIntro = createString("refIntro");
