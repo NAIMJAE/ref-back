@@ -19,4 +19,5 @@ public class ReferenceDTO {
     private LocalDate refCreate;
     private LocalDate refUpdate;
     private String refThumb;
+    private String refCate;
 }
