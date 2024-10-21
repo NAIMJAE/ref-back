@@ -10,7 +10,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.io.Console;
 import java.time.*;
 
 @Component
@@ -59,7 +58,9 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             String rawLanguage = request.getHeader("Accept-Language");
             String language = (rawLanguage != null && rawLanguage.length() >= 2) ? rawLanguage.substring(0, 5) : "unknown";
             String xForwarded = request.getHeader("X-Forwarded-For");
-
+            boolean isMobile = userAgent.toLowerCase().contains("mobile") || userAgent.toLowerCase().contains("android") || userAgent.toLowerCase().contains("iphone");
+            String device = isMobile ? "Mobile":"Desktop";
+            
             log.info("userAgent : " + userAgent);
             log.info("referer : " + referer);
             log.info("language : " + language);
@@ -71,6 +72,7 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
                     .language(language)
                     .referer(referer)
                     .vtAgent(getBrowser(userAgent))
+                    .vtDevice(device)
                     .build();
 
             visitorTrackingService.insertVisitLog(visitLog, xForwarded);
