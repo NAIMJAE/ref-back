@@ -35,6 +35,8 @@ public class QVisitLog extends EntityPathBase<VisitLog> {
 
     public final StringPath vtCountry = createString("vtCountry");
 
+    public final StringPath vtDevice = createString("vtDevice");
+
     public QVisitLog(String variable) {
         super(VisitLog.class, forVariable(variable));
     }
