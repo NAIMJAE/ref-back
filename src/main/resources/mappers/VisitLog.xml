@@ -20,6 +20,7 @@
         SELECT vt_country AS country, COUNT(*) AS count
         FROM vt_visit_log
         GROUP BY vt_country
+        ORDER BY count DESC
     </select>
 
     <!-- 방문자 방문 지역 Count -->
@@ -27,6 +28,12 @@
         SELECT vt_country AS countryName, vt_city AS regionName, COUNT(*) AS visitCount
         FROM vt_visit_log
         GROUP BY vt_country, vt_city
+    </select>
+
+    <!-- 방문자 총 Count -->
+    <select id="selectCountAll" resultType="long">
+        SELECT COUNT(*) 
+        FROM vt_visit_log
     </select>
 
 </mapper>

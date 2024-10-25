@@ -15,4 +15,7 @@ public interface VisitLogMapper {
 
     // 방문자 방문 지역 Count
     public List<RegionDTO> selectRegionCounts();
+
+    // 방문자 총 합 
+    public long selectCountAll();
 }

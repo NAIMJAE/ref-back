@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import kr.co.reference.webAnalytics.VisitorTracking.VisitCount;
 
 @Repository
-public interface VisitCountRepository extends JpaRepository<VisitCount, LocalDate> {
+public interface VisitCountRepository extends JpaRepository<VisitCount, LocalDate>, VisitCountRepositoryCustom {
 
 }
