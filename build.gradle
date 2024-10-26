@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.2'
-    id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.springframework.boot' version '3.3.2'
+	id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'kr.co.reference'
-version = '1.2.2-2410131'
+version = 'v1.3.1-2410261'
 
 java {
     toolchain {
@@ -72,6 +72,10 @@ dependencies {
 
     // Ip 지역 추적
     implementation 'com.maxmind.geoip2:geoip2:4.0.0'
+
+    // MyBaties
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
 
 }
 

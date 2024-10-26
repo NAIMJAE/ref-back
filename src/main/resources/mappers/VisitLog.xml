@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.reference.webAnalytics.VisitorTracking.VisitLogMapper">
+
+    <!-- 방문자 기기 Count -->
+    <select id="selectDeviceCounts" resultType="map">
+        SELECT 
+            vt_device AS device,
+            COUNT(*) AS count
+        FROM vt_visit_log
+        WHERE vt_device IS NOT NULL
+        GROUP BY vt_device
+    </select>
+
+    <!-- 나라별 방문자 수 조회 -->
+    <select id="selectCountryCounts" resultType="kr.co.reference.webAnalytics.VisitorTracking.CountryDTO">
+        SELECT vt_country AS country, COUNT(*) AS count
+        FROM vt_visit_log
+        GROUP BY vt_country
+        ORDER BY count DESC
+    </select>
+
+    <!-- 방문자 방문 지역 Count -->
+    <select id="selectRegionCounts" resultType="kr.co.reference.webAnalytics.VisitorTracking.RegionDTO">
+        SELECT vt_country AS countryName, vt_city AS regionName, COUNT(*) AS visitCount
+        FROM vt_visit_log
+        GROUP BY vt_country, vt_city
+    </select>
+
+    <!-- 방문자 총 Count -->
+    <select id="selectCountAll" resultType="long">
+        SELECT COUNT(*) 
+        FROM vt_visit_log
+    </select>
+
+</mapper>

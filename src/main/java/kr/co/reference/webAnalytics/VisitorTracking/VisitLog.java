@@ -41,4 +41,7 @@ public class VisitLog {
 
     @Column(name = "vt_country")
     private String vtCountry;
+
+    @Column(name = "vt_device")
+    private String vtDevice;
 }
