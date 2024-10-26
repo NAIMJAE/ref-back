@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'kr.co.reference'
-version = '1.2.2-2410131'
+version = 'v1.3.1-2410261'
 
 java {
     toolchain {
