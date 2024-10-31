@@ -215,7 +215,7 @@ public class VisitorTrackingService {
             Long countLong = (Long) device.get("count");
             int count = countLong.intValue();
             double percentage = (double) count / totalVisitors * 100;
-            devicePercentageMap.put(deviceType, percentage);
+            devicePercentageMap.put(deviceType, (double) Math.round(percentage));
         }
 
         return devicePercentageMap;
