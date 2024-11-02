@@ -61,11 +61,6 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             boolean isMobile = userAgent.toLowerCase().contains("mobile") || userAgent.toLowerCase().contains("android") || userAgent.toLowerCase().contains("iphone");
             String device = isMobile ? "Mobile":"Desktop";
             
-            log.info("userAgent : " + userAgent);
-            log.info("referer : " + referer);
-            log.info("language : " + language);
-            log.info("xForwarded : " + xForwarded);
-
             VisitLog visitLog = VisitLog.builder()
                     .date(LocalDate.now())
                     .time(LocalTime.now())
@@ -75,7 +70,11 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
                     .vtDevice(device)
                     .build();
 
-            visitorTrackingService.insertVisitLog(visitLog, xForwarded);
+            if(referer.contains("localhost")){
+                log.info("referer : " + referer);
+            }else {
+                visitorTrackingService.insertVisitLog(visitLog, xForwarded);
+            }
         }
         return true;
     }
