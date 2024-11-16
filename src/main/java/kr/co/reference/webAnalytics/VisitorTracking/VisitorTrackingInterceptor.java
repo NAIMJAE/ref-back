@@ -43,7 +43,7 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
             // #2 신규 Visit_Record 쿠키 생성
             ResponseCookie visitRecord = ResponseCookie.from("REF_VISIT_RECORD", now.toString() )
                     .path("/")
-                    .maxAge(maxAge + 32400)
+                    .maxAge(maxAge)
                     .httpOnly(true)
                     .secure(true)
                     .sameSite("None")
