@@ -111,7 +111,8 @@ public class VisitorTrackingService {
 
     // 방문자 정보 저장
     public void insertVisitLog(VisitLog visitLog, String xForwarded) {
-
+        log.info("##############################");
+        log.info("xForwarded : " + xForwarded);
         if (xForwarded != null) {
             Region location = getLocationFromIP(xForwarded);
             // Region location = getLocationFromIP("3.34.115.39");
@@ -130,6 +131,9 @@ public class VisitorTrackingService {
         try {
             // 리소스 폴더에 있는 GeoLite2 데이터베이스 파일 경로
             File database = new File("uploads/data/GeoLite2-City.mmdb");
+            log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            log.info(""+database.exists());
+            log.info(""+database.canRead());
             DatabaseReader dbReader = new DatabaseReader.Builder(database).build();
 
             InetAddress ip = InetAddress.getByName(ipAddress);
