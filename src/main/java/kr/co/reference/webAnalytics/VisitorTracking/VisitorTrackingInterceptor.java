@@ -69,7 +69,7 @@ public class VisitorTrackingInterceptor implements HandlerInterceptor {
                     .vtAgent(getBrowser(userAgent))
                     .vtDevice(device)
                     .build();
-
+                
             if(referer.contains("localhost")){
                 log.info("referer : " + referer);
             }else {
